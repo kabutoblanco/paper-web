@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#007bff">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Roboto:wght@335&display=swap');
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Open Sans', sans-serif;
+        }
+        :root {
+            /* Base colors */
+            --primary-color: #003366;        /* Dark corporate blue */
+            --secondary-color: #005B96;      /* Medium professional blue */
+            --accent-color: #0099CC;         /* Light blue accent */
+            --default-color: #CCCCCC;        /* Default gray for disabled elements */
+
+            /* Pastel colors */
+            --pastel-color-1: #FFCCCC;       /* Light red */
+            --pastel-color-2: #CCFFCC;       /* Light green */
+            --pastel-color-3: #CCCCFF;       /* Light blue */
+
+            /* Background and text */
+            --background-light: #F5F7FA;     /* General light background */
+            --text-primary: #2C3E50;         /* Main text */
+            --text-secondary: #6C7A89;       /* Secondary text */
+
+            /* Status colors */
+            --success-color: #27AE60;        /* Green for success */
+            --warning-color: #E67E22;        /* Orange for warnings */
+            --error-color: #C0392B;          /* Red for errors */
+        }
+        [id^="upload-status-"] {
+            font-size: 0.55rem;
+        }
+        .loader {
+            width: 23px;
+            height: 23px;
+            border: 5px solid #FFF;
+            border-bottom-color: transparent;
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+            transform: rotate(90deg);
+        }
+        @keyframes rotation {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        } 
+        button,.btn {
+            border: none;
+            padding: 6px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+        .btn-arrow {
+            background-color: var(--default-color);
+            border: none;
+            padding: 0 5px;
+            font-size: 15px;
+            cursor: pointer;
+            color: var(--primary-color);
+        }
+        .btn-disabled {
+            background-color: var(--default-color) !important;
+            color: grey !important;
+            cursor: not-allowed;
+        }
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        .btn-secondary {
+            background-color: var(--default-color);
+            color: white;
+        }
+        .nav {
+            display: flex;
+            background-color: #333;
+            min-height: 30px;
+            gap: 10px;
+        }
+        .nav-tab {
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+        }
+        .nav > .active {
+            background-color: var(--background-light);
+            color: var(--text-primary);
+            font-weight: bold;
+            border-top-left-radius: 5px;
+            border-top-right-radius: 5px;
+            border-bottom: 0px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background-color: var(--background-light);
+        }
+        .tab-content {
+            display: none;
+            padding: 20px;
+            background-color: var(--background-light);
+            flex-grow: 1;
+        }
+        .main {
+            min-height: 100%;
+            width: 100%;
+        }
+        .main > .active {
+            display: block;
+        }
+        .drop-file {
+            width: 200px;
+            height: 100px;
+            border: 1px dashed var(--accent-color);
+            border-radius: 5px;
+            text-align: center;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            gap: 5px;
+        }
+        .file-info, .download-info {
+            font-size: small;
+            color: var(--text-secondary);
+        }
+        .row {
+            display: flex;
+            flex-direction: row;
+        }
+        .column {
+            display: flex;
+            flex-direction: column;
+        }
+        .gap-1 {
+            gap: 0.25rem;
+        }
+        .grid-container {
+            display: grid;
+            position: relative;
+            grid-template-columns: 150px 1fr;
+        }
+        .sidebar {
+            background: white;
+            border: 1px solid var(--default-color);
+            margin-right: 0.25rem;
+            overflow-y: auto;
+            padding: 0.5rem;
+            max-height: 215px;
+        }
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .pane-wrapper {
+            position: relative;
+        }
+        .pane {
+            flex: 1;
+            padding-top: 1.5rem;
+            background: white;
+            border: 1px solid var(--default-color);
+            padding: 10px;
+            height: 215px;
+            overflow-y: auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .border-title > h3 {
+            margin-left: 0.15rem;
+            position: absolute;
+            top: -0.55rem;
+            font-size: 0.75rem;
+            color: var(--primary-color);
+            background-color: var(--background-light);
+            padding: 0 0.25rem;
+        }
+        .sidebar > .item {
+            cursor: pointer;
+            border-bottom: 1px solid var(--default-color);
+            padding: 0.25rem 0;
+            font-size: 0.85rem;
+        }
+        .item-wrapper {
+            background-color: var(--pastel-color-3);
+            color: var(--text-primary);
+            padding: 0.15rem 0.4rem;
+            border-radius: 5px;
+            height: max-content;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            cursor: move;
+        }
+        .message {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            z-index: 1000;
+            display: none; /* Oculto por defecto */
+        }
+        .alert-success {
+            background-color: var(--success-color);
+            color: var(--background-light);
+        }
+        .alert-danger {
+            background-color: var(--error-color);
+            color: var(--background-light);
+        }
+        .login-box {
+            background-color: var(--primary-color);
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            gap: 0.5rem;
+        }
+        .container-form {
+            display: flex;
+            justify-content: center;
+            margin-top: 50px;
+        }
+    </style>
+</head>
+<body>
+    <div id="message" class="message"></div>
+    <div id="app" class="container">
+        <div class="container-form">
+            <form id="login" class="login-box column gap-1">
+                <input type="text" id="username" placeholder="Usuario" required>
+                <input type="password" id="password" placeholder="Contraseña" required>
+                <button type="submit" style="font-weight: bold;">INGRESAR</button>
+            </form>
+        </div>
+    </div>
+</body>
+<script>
+    document.getElementById('login').addEventListener('submit', function (event) {
+        event.preventDefault();
+        doLogin();
+    });
+    function doLogin() {
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value.trim();
+        const base64 = btoa(`${username}:${password}`);
+        const errorMsg = document.getElementById('login-error');
+
+        fetch(`${host}/api/check-auth`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Basic ${base64}`
+            }
+        })
+        .then(res => {
+            if (res.status === 200) {
+                localStorage.setItem('auth', base64);
+                alertMessage('Authorization successful', 'success');
+                document.getElementById('login').style.display = 'none';
+                document.getElementById('app').innerHTML = buildDashboard();
+                appendListener();
+            } else if (res.status === 401) {
+                alertMessage('Invalid credentials.', 'danger');
+            } else {
+                alertMessage('Unexpected error.', 'danger');
+            }
+        })
+        .catch(() => {
+            alertMessage('Error connecting to the server.', 'danger');
+        });
+    }
+</script>
+<script>
+    function buildDashboard() {
+        return `
+            <li class="nav" style="z-index: 1;">
+            <ul class="active nav-tab" name="main-1" onclick="openTab('main-1')">Group</ul>
+            <ul class="nav-tab" name="main-2" onclick="openTab('main-2')">Arrange</ul>
+        </li>
+        <div class="main" style="position: absolute;">
+            <div id="main-1" class="active tab-content" style="margin-top: 35px;">
+                <div>
+                    <div id="drop-file-group" class="drop-file">
+                        <img src="./assets/excel.png" alt="icon-excel" width="35">
+                        <div>
+                            <span>
+                                Drag a file here or <a href="#" onclick="openFile(); return false;">a upload file</a>
+                                <input type="file" id="file-input-group" style="display: none;" accept=".xlsx">
+                            </span>
+                            <div class="column">
+                                <progress id="upload-progress-group" value="0" max="100" style="width: 100%; display: none;"></progress>
+                                <span id="upload-status-group"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <p id="file-info" class="file-info"></p>
+                    <span id="download-info" class="download-info"></span>
+                </div>
+                <div class="row gap-1" style="margin-top: 0.25rem;">
+                    <button class="btn-disabled btn-primary row" disabled="true" style="align-items: center; justify-content: center; width: 52px;" onclick="onRunGroup(event); return false;">RUN</button>
+                    <button class="btn-disabled btn-secondary row" disabled="true" style="align-items: center;" onclick="onDownload(event); return false;"><?xml version="1.0" encoding="UTF-8"?><svg width="24px" height="24px" stroke-width="1.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" color="#000000"><path d="M6 20L18 20" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path><path d="M12 4V16M12 16L15.5 12.5M12 16L8.5 12.5" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
+                </div>
+            </div>
+            <div id="main-2" class="tab-content" style="margin-top: 35px;">
+                <div>
+                    <div id="drop-file-arrange" class="drop-file">
+                        <img src="./assets/excel.png" alt="icon-excel" width="35">
+                        <div>
+                            <span>
+                                Drag a file here or <a href="#" onclick="openFile(); return false;">a upload file</a>
+                                <input type="file" id="file-input-arrange" style="display: none;" accept=".xlsx">
+                            </span>
+                            <div class="column">
+                                <progress id="upload-progress-arrange" value="0" max="100" style="width: 100%; display: none;"></progress>
+                                <span id="upload-status-arrange"></span>
+                            </div>
+                            </div>
+                        </div>
+                        <p id="file-info" class="file-info"></p>
+                        <span id="download-info" class="download-info"></span>
+                    </div>
+                    <div class="row gap-1" style="margin-top: 0.25rem;">
+                        <button class="btn-disabled btn-primary row" disabled="true" style="align-items: center; justify-content: center; width: 52px;" onclick="onRunArrange(event); return false;">RUN</button>
+                        <button class="btn-disabled btn-secondary row" disabled="true" style="align-items: center;" onclick="onDownload(event); return false;"><?xml version="1.0" encoding="UTF-8"?><svg width="24px" height="24px" stroke-width="1.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" color="#000000"><path d="M6 20L18 20" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path><path d="M12 4V16M12 16L15.5 12.5M12 16L8.5 12.5" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
+                    </div>
+                    <hr style="margin-top: 1rem;">
+                    <div class="grid-container border-title" style="margin-top: 1rem;">
+                        <h3>Available</h3>
+                        <!-- Columna izquierda con lista -->
+                        <div class="sidebar"></div>
+                        <!-- Columna derecha con dos "panes" -->
+                        <div class="main-content">
+                            <div class="pane-wrapper border-title" ondragover="allowDrop(event)" ondrop="drop(event)">
+                                <h3>Filter</h3>
+                                <div id="pane-filter" class="pane" ondrop="drop(event)" ondragover="allowDrop(event)">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    }
+</script>
+<script>
+    const states = ["–", "↑", "↓"];
+    const host = '';
+    var filenameUploadGroup = null;
+    var filenameDownloadGroup = null;
+    var filenameUploadArrange = null;
+    var filenameDownloadArrange = null;
+</script>
+<script>
+    // Para comportamiento de mensajes de alerta, que se basa en un elemento del DOM id message y un timeout de 3 segundos
+    function alertMessage(message, type) {
+        type = type || 'success';
+        const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+        const messageElement = document.getElementById('message');
+        messageElement.className = `message ${alertClass}`;
+        messageElement.textContent = message;
+        messageElement.style.display = 'block';
+        setTimeout(() => {
+            messageElement.style.display = 'none';
+        }, 3500);
+    }
+</script>
+<script>
+    function onDownload(event, filename) {
+        event.preventDefault();
+
+        let fileDownload = filename;
+
+        if (!filename) {
+            fileDownload = event.target.parentElement.parentElement.parentElement.id === 'main-1' ? 
+                filenameDownloadGroup : 
+                filenameDownloadArrange;
+        }
+
+        if (!fileDownload) {
+            alertMessage('No file to download', 'danger');
+            return;
+        }
+
+        const auth = localStorage.getItem('auth');
+        if (!auth) {
+            alertMessage('Not authorized', 'danger');
+            return;
+        }
+
+        fetch(`${host}/api/download/${fileDownload}`, {
+            headers: {
+                'Authorization': 'Basic ' + auth
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Failed to download file: " + response.statusText);
+            }
+            return response.blob();
+        })
+        .then(blob => {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileDownload;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        })
+        .catch(error => {
+            console.error(error);
+            alertMessage('Failed to download file', 'danger');
+        });
+    }
+</script>
+<script>
+    function onRunGroup(e) {
+        e.preventDefault();
+        if (!filenameUploadGroup) {
+            alertMessage('Please upload a file first', 'danger');
+            return;
+        }
+        e.target.innerHTML = "<div class='loader'></div>";
+        e.target.disabled = true;
+
+        fetch(`${host}/api/process`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Basic ${localStorage.getItem('auth')}`
+            },
+            body: JSON.stringify({
+                type: 'group',
+                filename: filenameUploadGroup
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.error) {
+                alertMessage(data.error, 'danger');
+                return;
+            } else {
+                filenameDownloadGroup = data.filename;
+                alertMessage(data.message);
+                e.target.parentElement.parentElement.querySelector('#download-info').innerHTML = `
+                    File ready to download: 
+                    <a href="#" onclick="onDownload(event, '${filenameDownloadGroup}')">${filenameDownloadGroup}</a>`;
+            }
+        })
+        .catch(error => {
+            alertMessage('Called API error', 'danger');
+        })
+        .finally(() => {
+            e.target.innerHTML = "RUN";
+            e.target.disabled = false;
+        });;
+    }
+
+    function onRunArrange(e) {
+        e.preventDefault();
+        if (document.querySelectorAll('#pane-filter .item-selected').length === 0) {
+            alertMessage('Please select at least one column to filter', 'danger');
+            return;
+        }
+        if (!filenameUploadArrange) {
+            alertMessage('Please upload a file first', 'danger');
+            return;
+        }
+        e.target.innerHTML = "<div class='loader'></div>";
+        e.target.disabled = true;
+
+        const selectedFilter = document.querySelectorAll('#pane-filter .item-selected');
+        const listFilter = [];
+        const listArrange = [];
+        selectedFilter.forEach(item => {
+            listFilter.push(item.getAttribute('value'));
+
+            var arrowBtn = item.parentElement.querySelector('.btn-arrow').innerHTML;
+            var arrowDirection = arrowBtn === states[1] ? "ascending" : arrowBtn === states[2] ? "descending" : null;
+            if (arrowDirection) {
+                var value = item.getAttribute('value');
+                listArrange.push({ value: value, direction: arrowDirection });
+            }
+        });
+
+        // Enviar a la API
+        fetch(`${host}/api/process`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Basic ${localStorage.getItem('auth')}`
+            },
+            body: JSON.stringify({
+                type: 'arrange',
+                filename: filenameUploadArrange,
+                columns_filter: listFilter,
+                columns_arrange: listArrange
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.error) {
+                alertMessage(data.error, 'danger');
+                return;
+            } else {
+                filenameDownloadArrange = data.filename;
+                alertMessage(data.message);
+                e.target.parentElement.parentElement.querySelector('#download-info').innerHTML = `
+                    File ready to download: 
+                    <a href="#" onclick="onDownload(event, '${filenameDownloadArrange}')">${filenameDownloadArrange}</a>`;
+            }
+        })
+        .catch(error => {
+            alertMessage('Called API error', 'danger');
+        })
+        .finally(() => {
+            e.target.innerHTML = "RUN";
+            e.target.disabled = false;
+        });
+    }
+</script>
+<script>
+    function openTab(tabIndex) {
+        const navTabs = document.querySelectorAll('.nav-tab');
+        const mainTabs = document.querySelectorAll('.main > div');
+        navTabs.forEach(tab => {
+            if (tab.getAttribute('name') === tabIndex) {
+                tab.classList.add('active');
+            } else {
+                tab.classList.remove('active');
+            }
+        })
+        mainTabs.forEach(main => {
+            if (main.id === tabIndex) {
+                main.classList.add('active');
+            } else {
+                main.classList.remove('active');
+            }
+        });
+    }
+</script>
+<script>
+    //Funcion para llenar la lista de items disponibles con el tag padre "sidebar". Recibe lista de items tipo array de strings
+    function fillItems(items) {
+        const sidebar = document.querySelector('.sidebar');
+        sidebar.innerHTML = '';
+        items.forEach((item, index) => {
+            const div = document.createElement('div');
+            div.id = `item-${index + 1}`;
+            div.className = 'item';
+            div.setAttribute('draggable', 'true');
+            div.setAttribute('ondragstart', 'drag(event)');
+            div.setAttribute('value', item);
+            div.textContent = item;
+            sidebar.appendChild(div);
+        });
+    }
+</script>
+<script>
+    function openFile() {
+        const activeTab = document.querySelector('.tab-content.active');
+        const fileInput = activeTab.querySelector('input[type="file"]');
+        fileInput.click();
+    }
+    function appendListener() {
+        document.querySelectorAll('input[type="file"]').forEach(input => {
+            input.addEventListener('change', function() {
+                const type = input.id.includes('group') ? 'group' : 'arrange';
+                const file = this.files[0];
+                const fileInfo = this.closest('.tab-content').querySelector('.file-info');
+                uploadFile(file, fileInfo, type);
+            });
+        });
+
+        document.querySelectorAll('.drop-file').forEach(dropZone => {
+            const fileInfo = dropZone.parentElement.querySelector('.file-info'); 
+
+            dropZone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                dropZone.classList.add('hover');
+            });
+
+            dropZone.addEventListener('dragleave', function() {
+                dropZone.classList.remove('hover');
+            });
+
+            dropZone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                dropZone.classList.remove('hover');
+
+                const type = dropZone.id.includes('group') ? 'group' : 'arrange';
+                const file = e.dataTransfer.files[0];
+                uploadFile(file, fileInfo, type);
+            });
+        });
+    }
+    appendListener();
+</script>
+<script>
+    function uploadFile(file, fileInfo, type) {
+        if (file && file.name.endsWith('.xlsx')) {
+            fileInfo.textContent = `Dropped file: ${file.name}`;
+            const formData = new FormData();
+            formData.append('file', file);
+
+            if (type === 'group') {
+                formData.append('type', type);
+
+                var buttonPrimary = document.getElementById('main-1').querySelector('.btn-primary');
+                var buttonSecondary = document.getElementById('main-1').querySelector('.btn-secondary');
+                var spanDownload = document.getElementById('main-1').querySelector('#download-info');
+
+                const progressBar = document.getElementById('upload-progress-group');
+                const statusText = document.getElementById('upload-status-group');
+                progressBar.style.display = 'block';
+                progressBar.value = 0;
+
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', `${host}/api/upload`, true);
+                xhr.setRequestHeader('Authorization', `Basic ${localStorage.getItem('auth')}`);
+
+                xhr.upload.onprogress = function (e) {
+                    if (e.lengthComputable) {
+                        const percent = Math.round((e.loaded / e.total) * 100);
+                        progressBar.value = percent;
+                        statusText.textContent = `Uploading: ${percent}%`;
+                    }
+                };
+                    
+                xhr.onloadstart = function () {
+                    fileInfo.textContent = 'Processing file...';
+                };
+
+                xhr.onload = function () {
+                    const response = JSON.parse(xhr.responseText);
+                    if (xhr.status === 200 && !response.error) {
+                        filenameUploadGroup = response.uploaded;
+                        fileInfo.textContent = `File uploaded successfully: ${file.name}`;
+                        buttonPrimary.disabled = false;
+                        buttonSecondary.disabled = false;
+                        buttonPrimary.classList.remove('btn-disabled');
+                        buttonSecondary.classList.remove('btn-disabled');
+                    } else {
+                        fileInfo.textContent = `Error: ${response.error || 'Unknown error'}`;
+                        alertMessage(response.error || 'Unknown error', 'danger');
+                        buttonPrimary.disabled = true;
+                        buttonSecondary.disabled = true;
+                        buttonPrimary.classList.add('btn-disabled');
+                        buttonSecondary.classList.add('btn-disabled');
+                    }
+                };
+
+                xhr.onerror = function () {
+                    fileInfo.textContent = 'Failed to upload file';
+                    buttonPrimary.disabled = true;
+                    buttonSecondary.disabled = true;
+                    buttonPrimary.classList.add('btn-disabled');
+                    buttonSecondary.classList.add('btn-disabled');
+                };
+
+                xhr.send(formData);
+
+                spanDownload.innerHTML = '';
+                filenameDownloadGroup = null;
+            } else if (type === 'arrange') {
+                formData.append('type', 'arrange');
+
+                var buttonPrimary = document.getElementById('main-2').querySelector('.btn-primary');
+                var buttonSecondary = document.getElementById('main-2').querySelector('.btn-secondary');
+                var spanDownload = document.getElementById('main-2').querySelector('#download-info');
+
+                const progressBar = document.getElementById('upload-progress-arrange');
+                const statusText = document.getElementById('upload-status-arrange');
+                progressBar.style.display = 'block';
+                progressBar.value = 0;
+
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', `${host}/api/upload`, true);
+                xhr.setRequestHeader('Authorization', `Basic ${localStorage.getItem('auth')}`);
+
+                xhr.upload.onprogress = function (e) {
+                    if (e.lengthComputable) {
+                        const percent = Math.round((e.loaded / e.total) * 100);
+                        progressBar.value = percent;
+                        statusText.textContent = `Uploading: ${percent}%`;
+                    }
+                };
+                    
+                xhr.onloadstart = function () {
+                    fileInfo.textContent = 'Processing file...';
+                };
+
+                xhr.onload = function () {
+                    const response = JSON.parse(xhr.responseText);
+                    if (xhr.status === 200 && !response.error) {
+                        filenameUploadArrange = response.uploaded;
+                        fillItems(response.available_columns);
+                        fileInfo.textContent = `File uploaded successfully: ${file.name}`;
+                        buttonPrimary.disabled = false;
+                        buttonSecondary.disabled = false;
+                        buttonPrimary.classList.remove('btn-disabled');
+                        buttonSecondary.classList.remove('btn-disabled');
+                    } else {
+                        fileInfo.textContent = `Error: ${response.error || 'Unknown error'}`;
+                        alertMessage(response.error || 'Unknown error', 'danger');
+                        buttonPrimary.disabled = true;
+                        buttonSecondary.disabled = true;
+                        buttonPrimary.classList.add('btn-disabled');
+                        buttonSecondary.classList.add('btn-disabled');
+                    }
+                };
+
+                xhr.onerror = function () {
+                    fileInfo.textContent = 'Failed to upload file';
+                    buttonPrimary.disabled = true;
+                    buttonSecondary.disabled = true;
+                    buttonPrimary.classList.add('btn-disabled');
+                    buttonSecondary.classList.add('btn-disabled');
+                };
+
+                xhr.send(formData);
+                
+                document.getElementById('pane-filter').innerHTML = '';
+                spanDownload.innerHTML = '';
+                filenameDownloadArrange = null;
+            }
+        } else {
+            fileInfo.textContent = 'Please drop a valid .xlsx file.';
+        }
+    }
+</script>
+<script>
+    function allowDrop(event) {
+        event.preventDefault();
+    }
+
+    function drag(event) {
+        event.dataTransfer.setData("text", event.target.id);
+    }
+
+    function drop(event) {
+        event.preventDefault();
+
+        const target = event.target.closest(".pane");
+        if (!target) return;
+
+        // Si estamos moviendo un wrapper ya existente
+        const draggedWrapperId = event.dataTransfer.getData("dragged-wrapper-id");
+        const draggedWrapper = document.getElementById(draggedWrapperId);
+        if (draggedWrapper) {
+            const referenceNode = event.target.closest(".item-wrapper");
+            if (referenceNode && referenceNode !== draggedWrapper) {
+                target.insertBefore(draggedWrapper, referenceNode);
+            } else {
+                target.appendChild(draggedWrapper);
+            }
+            return;
+        }
+
+        // Si estamos trayendo un ítem nuevo
+        const id = event.dataTransfer.getData("text");
+        const fromElement = document.getElementById(id);
+        if (!fromElement) return;
+
+        const fromValue = fromElement.getAttribute('value');
+
+        const isExist = Array.from(target.children).some(item => {
+            const child = item.querySelector('.item-selected');
+            return child && child.getAttribute('value') === fromValue;
+        });
+
+        if (isExist) return;
+
+        // Crear clon
+        const clone = fromElement.cloneNode(true);
+        const uniqueId = id + "_copy_" + Date.now();
+        clone.id = uniqueId;
+        clone.classList.add("item-selected");
+        clone.draggable = false;
+
+        // Crear contenedor (wrapper)
+        const wrapper = document.createElement("div");
+        wrapper.classList.add("item-wrapper");
+        const wrapperId = "wrapper_" + Date.now();
+        wrapper.id = wrapperId;
+        wrapper.draggable = true;
+
+        // Soporte para reordenar
+        wrapper.addEventListener("dragstart", function (e) {
+            e.dataTransfer.setData("dragged-wrapper-id", wrapper.id);
+        });
+
+        wrapper.appendChild(clone);
+
+        // Botón de orden ↑ ↓ –
+        if (target.id === "pane-filter") {
+            const arrowBtn = document.createElement("button");
+            arrowBtn.className = "btn-arrow";
+            arrowBtn.textContent = states[0];
+            arrowBtn.style.cursor = "pointer";
+            arrowBtn.style.color = "var(--primary-color)";
+            arrowBtn.onclick = () => {
+                const current = arrowBtn.textContent.trim();
+                let idx = states.indexOf(current);
+                if (idx === -1) idx = 0;
+                arrowBtn.textContent = states[(idx + 1) % states.length];
+            };
+            wrapper.appendChild(arrowBtn);
+        }
+
+        // Botón "X" para eliminar
+        const closeBtn = document.createElement("span");
+        closeBtn.textContent = "×";
+        closeBtn.className = "close-btn";
+        closeBtn.style.top = "2px";
+        closeBtn.style.right = "4px";
+        closeBtn.style.cursor = "pointer";
+        closeBtn.style.color = "var(--error-color)";
+        closeBtn.style.fontWeight = "bold";
+        closeBtn.onclick = () => wrapper.remove();
+        wrapper.appendChild(closeBtn);
+
+        // Agregar al destino
+        target.appendChild(wrapper);
+    }
+</script>
+<script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then(reg => console.log('Service Worker registered: ', reg))
+          .catch(err => console.error('Error registrando SW:', err));
+      });
+    }
+</script>
+</html>
