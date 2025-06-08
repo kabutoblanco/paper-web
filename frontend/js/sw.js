@@ -1,9 +1,7 @@
-const CACHE_NAME = "mi-app-cache-v1";
+const CACHE_NAME = "paper-web-cache-v1";
 const urlsToCache = [
   "/",
   "/index.html",
-  "/styles.css",
-  "/script.js",
   "/icons/icon-128.png",
   "/icons/icon-512.png"
 ];
