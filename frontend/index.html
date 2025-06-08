@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Paper Web</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#007bff">
     <style>
@@ -253,7 +253,7 @@
             <form id="login" class="login-box column gap-1">
                 <input type="text" id="username" placeholder="Usuario" required>
                 <input type="password" id="password" placeholder="Contraseña" required>
-                <button type="submit" style="font-weight: bold;">INGRESAR</button>
+                <button id="btn-login" type="submit" class="row" style="align-items: center; justify-content: center;" style="font-weight: bold;">SIGN IN</button>
             </form>
         </div>
     </div>
@@ -268,6 +268,11 @@
         const password = document.getElementById('password').value.trim();
         const base64 = btoa(`${username}:${password}`);
         const errorMsg = document.getElementById('login-error');
+
+        const button = document.getElementById('btn-login');
+
+        button.innerHTML = "<div class='loader'></div>";
+        button.disabled = true;
 
         fetch(`${host}/api/check-auth`, {
             method: 'GET',
@@ -290,6 +295,10 @@
         })
         .catch(() => {
             alertMessage('Error connecting to the server.', 'danger');
+        })
+        .finally(() => {
+            button.innerHTML = "SIGN IN";
+            button.disabled = false;
         });
     }
 </script>

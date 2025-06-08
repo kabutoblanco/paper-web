@@ -1,21 +1,20 @@
 from datetime import datetime
-import math
+from dotenv import load_dotenv
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
-import os
-import random
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-import pandas as pd
-import numpy as np
 from functools import wraps
-from dotenv import load_dotenv
-import os
-
 from openpyxl.styles import *
 from openpyxl.utils import get_column_letter
-
 from werkzeug.utils import secure_filename
+
+import math
+import numpy as np
+import os
+import pandas as pd
+import random
+
 
 app = Flask(__name__, static_folder='frontend', static_url_path='')
 CORS(app)
@@ -26,9 +25,17 @@ limiter = Limiter(
     default_limits=["10 per minute"]
 )
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+load_dotenv(os.path.join(BASE_DIR, '.env'))
+
 # Configuración de carpetas
 UPLOAD_FOLDER = os.getenv('PATH_UPLOAD', 'uploads')
 PROCESSED_FOLDER = os.getenv('PATH_PROCESSED', 'static/processed')
+
+UPLOAD_FOLDER = os.path.join(BASE_DIR, UPLOAD_FOLDER)
+PROCESSED_FOLDER = os.path.join(BASE_DIR, PROCESSED_FOLDER)
+
 ALLOWED_EXTENSIONS = {'xlsx'}
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER

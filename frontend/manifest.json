@@ -1,6 +1,6 @@
 {
-  "name": "Mi App PWA",
-  "short_name": "MiPWA",
+  "name": "Paper Web PWA",
+  "short_name": "PaperWeb",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",
